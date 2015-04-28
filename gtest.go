@@ -13,7 +13,7 @@ var (
 	defaultTest = &test{}
 )
 
-type sotest struct {
+type SoTest struct {
 	// actual   interface{}
 	// assert   func(actual interface{}, expected ...interface{}) string
 	// expected []interface{}
@@ -40,7 +40,7 @@ func NewTest(t testing.TB) *test {
 // required is to import this package and call `So` with one of the assertions
 // exported by this package as the second parameter.
 // This function uses the default test object created by the package.
-func So(actual interface{}, assert func(actual interface{}, expected ...interface{}) string, expected ...interface{}) sotest {
+func So(actual interface{}, assert func(actual interface{}, expected ...interface{}) string, expected ...interface{}) SoTest {
 	return defaultTest.So(actual, assert, expected...)
 }
 
@@ -50,9 +50,9 @@ func So(actual interface{}, assert func(actual interface{}, expected ...interfac
 // discrepancies) but without the program blowing up or panicing. All that is
 // required is to import this package and call `So` with one of the assertions
 // exported by this package as the second parameter.
-func (t *test) So(actual interface{}, assert func(actual interface{}, expected ...interface{}) string, expected ...interface{}) sotest {
+func (t *test) So(actual interface{}, assert func(actual interface{}, expected ...interface{}) string, expected ...interface{}) SoTest {
 	ok, message := assertions.So(actual, assert, expected...)
-	return sotest{
+	return SoTest{
 		ok:      ok,
 		message: message,
 		test:    t,
@@ -61,7 +61,7 @@ func (t *test) So(actual interface{}, assert func(actual interface{}, expected .
 
 // Else allows you to provide a function to be called when the test fails.
 // The callback is called with one parameter with the error message.
-func (t sotest) Else(args ...interface{}) {
+func (t SoTest) Else(args ...interface{}) {
 	if !t.ok {
 		var f func(string)
 		for _, v := range args {
@@ -79,7 +79,7 @@ func (t sotest) Else(args ...interface{}) {
 // This function will overwrite the default go file/line number
 // using "\r". This is hacky and will show up in logs weird. Use
 // `Else()` instead of you want to avoid this.
-func (t sotest) ElseFatal(args ...interface{}) {
+func (t SoTest) ElseFatal(args ...interface{}) {
 	if !t.ok {
 		var tt testing.TB = t.test.t
 		for _, v := range args {
@@ -113,7 +113,7 @@ func (t sotest) ElseFatal(args ...interface{}) {
 // This function will overwrite the default go file/line number
 // using "\r". This is hacky and will show up in logs weird. Use
 // `Else()` instead of you want to avoid this.
-func (t sotest) ElseError(args ...interface{}) {
+func (t SoTest) ElseError(args ...interface{}) {
 	if !t.ok {
 		var tt testing.TB = t.test.t
 		for _, v := range args {
