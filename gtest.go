@@ -2,7 +2,6 @@ package gtest
 
 import (
 	"fmt"
-	"log"
 	"runtime"
 	"strings"
 	"testing"
@@ -15,20 +14,22 @@ var (
 )
 
 type sotest struct {
-	actual   interface{}
-	assert   func(actual interface{}, expected ...interface{}) string
-	expected []interface{}
-	test     *test
+	// actual   interface{}
+	// assert   func(actual interface{}, expected ...interface{}) string
+	// expected []interface{}
+	message string
+	ok      bool
+	test    *test
 }
 
 type test struct {
-	Prefix string
-	t      *testing.T
+	//prefix string
+	t testing.TB
 }
 
 // NewTest creates a new test object. This is not needed unless you
 // want to pass in your own `t` at initialization.
-func NewTest(t *testing.T) *test {
+func NewTest(t testing.TB) *test {
 	return &test{t: t}
 }
 
@@ -50,30 +51,48 @@ func So(actual interface{}, assert func(actual interface{}, expected ...interfac
 // required is to import this package and call `So` with one of the assertions
 // exported by this package as the second parameter.
 func (t *test) So(actual interface{}, assert func(actual interface{}, expected ...interface{}) string, expected ...interface{}) sotest {
+	ok, message := assertions.So(actual, assert, expected...)
 	return sotest{
-		actual:   actual,
-		assert:   assert,
-		expected: expected,
-		test:     t,
+		ok:      ok,
+		message: message,
+		test:    t,
 	}
 }
 
 // Else allows you to provide a function to be called when the test fails.
 // The callback is called with one parameter with the error message.
-func (t sotest) Else(f func(string)) {
-	ok, message := assertions.So(t.actual, t.assert, t.expected...)
-	if !ok {
-		f(message)
+func (t sotest) Else(args ...interface{}) {
+	if !t.ok {
+		var f func(string)
+		for _, v := range args {
+			switch t := v.(type) {
+			case func(string):
+				f = t
+			}
+		}
+
+		f(t.message)
 	}
 }
 
-// ElseFatal is called when the test fails, and will call t.Fatal.
+// ElseFatal is used to call t.Fatal when the test fails.
 // This function will overwrite the default go file/line number
 // using "\r". This is hacky and will show up in logs weird. Use
 // `Else()` instead of you want to avoid this.
-func (t sotest) ElseFatal(tt ...*testing.T) {
-	assertok, message := assertions.So(t.actual, t.assert, t.expected...)
-	if !assertok {
+func (t sotest) ElseFatal(args ...interface{}) {
+	if !t.ok {
+		var tt testing.TB = t.test.t
+		for _, v := range args {
+			switch t := v.(type) {
+			case testing.TB:
+				tt = t
+			}
+		}
+
+		if tt == nil {
+			panic("gtest: called ElseFatal but no testing.TB")
+		}
+
 		_, file, line, ok := runtime.Caller(1)
 		if ok {
 			if index := strings.LastIndex(file, "/"); index >= 0 {
@@ -86,25 +105,28 @@ func (t sotest) ElseFatal(tt ...*testing.T) {
 			line = 1
 		}
 
-		testingt := t.test.t
-		if testingt == nil {
-			if len(tt) == 0 || tt[0] == nil {
-				log.Fatal("gtest: called ElseFatal but no *testing.T")
-			}
-			testingt = tt[0]
-		}
-
-		testingt.Fatalf("\r%s\r\t%s:%d\n%s", getWhitespaceString(), file, line, message)
+		tt.Fatalf("\r%s\r\t%s:%d\n%s", getWhitespaceString(), file, line, t.message)
 	}
 }
 
-// ElseError is called when the test fails, and will call t.Error.
+// ElseError is used to call t.Error when the test fails.
 // This function will overwrite the default go file/line number
 // using "\r". This is hacky and will show up in logs weird. Use
 // `Else()` instead of you want to avoid this.
-func (t sotest) ElseError(tt ...*testing.T) {
-	assertok, message := assertions.So(t.actual, t.assert, t.expected...)
-	if !assertok {
+func (t sotest) ElseError(args ...interface{}) {
+	if !t.ok {
+		var tt testing.TB = t.test.t
+		for _, v := range args {
+			switch t := v.(type) {
+			case testing.TB:
+				tt = t
+			}
+		}
+
+		if tt == nil {
+			panic("gtest: called ElseError but no testing.TB")
+		}
+
 		_, file, line, ok := runtime.Caller(1)
 		if ok {
 			if index := strings.LastIndex(file, "/"); index >= 0 {
@@ -117,15 +139,7 @@ func (t sotest) ElseError(tt ...*testing.T) {
 			line = 1
 		}
 
-		testingt := t.test.t
-		if testingt == nil {
-			if len(tt) == 0 || tt[0] == nil {
-				log.Fatal("gtest: called ElseError but no *testing.T")
-			}
-			testingt = tt[0]
-		}
-
-		testingt.Errorf("\r%s\r\t%s:%d\n%s", getWhitespaceString(), file, line, message)
+		tt.Errorf("\r%s\r\t%s:%d\n%s", getWhitespaceString(), file, line, t.message)
 	}
 }
 

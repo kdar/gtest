@@ -96,7 +96,7 @@ var (
 
 ## func NewTest
 ``` go
-func NewTest(t *testing.T) *test
+func NewTest(t testing.TB) *test
 ```
 NewTest creates a new test object. This is not needed unless you
 want to pass in your own `t` at initialization.
