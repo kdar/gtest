@@ -102,9 +102,24 @@ NewTest creates a new test object. This is not needed unless you
 want to pass in your own `t` at initialization.
 
 
-## func So
+
+## type SoTest
 ``` go
-func So(actual interface{}, assert func(actual interface{}, expected ...interface{}) string, expected ...interface{}) sotest
+type SoTest struct {
+    // contains filtered or unexported fields
+}
+```
+
+
+
+
+
+
+
+
+### func So
+``` go
+func So(actual interface{}, assert func(actual interface{}, expected ...interface{}) string, expected ...interface{}) SoTest
 ```
 So is a convenience function for running assertions on arbitrary arguments
 in any context, be it for testing or even application logging. It allows you
@@ -113,6 +128,38 @@ discrepancies) but without the program blowing up or panicing. All that is
 required is to import this package and call `So` with one of the assertions
 exported by this package as the second parameter.
 This function uses the default test object created by the package.
+
+
+
+
+### func (SoTest) Else
+``` go
+func (t SoTest) Else(args ...interface{})
+```
+Else allows you to provide a function to be called when the test fails.
+The callback is called with one parameter with the error message.
+
+
+
+### func (SoTest) ElseError
+``` go
+func (t SoTest) ElseError(args ...interface{})
+```
+ElseError is used to call t.Error when the test fails.
+This function will overwrite the default go file/line number
+using "\r". This is hacky and will show up in logs weird. Use
+`Else()` instead of you want to avoid this.
+
+
+
+### func (SoTest) ElseFatal
+``` go
+func (t SoTest) ElseFatal(args ...interface{})
+```
+ElseFatal is used to call t.Fatal when the test fails.
+This function will overwrite the default go file/line number
+using "\r". This is hacky and will show up in logs weird. Use
+`Else()` instead of you want to avoid this.
 
 
 
