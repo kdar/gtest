@@ -27,9 +27,9 @@ type test struct {
 	t testing.TB
 }
 
-// NewTest creates a new test object. This is not needed unless you
+// New creates a new test object. This is not needed unless you
 // want to pass in your own `t` at initialization.
-func NewTest(t testing.TB) *test {
+func New(t testing.TB) *test {
 	return &test{t: t}
 }
 
