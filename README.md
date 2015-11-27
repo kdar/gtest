@@ -1,5 +1,5 @@
 
-# gtest [![GoDoc](https://godoc.org/github.com/kdar/gtest?status.png)](http://godoc.org/github.com/kdar/gtest) 
+# gtest [![GoDoc](https://godoc.org/github.com/kdar/gtest?status.png)](http://godoc.org/github.com/kdar/gtest)
 
     import "github.com/kdar/gtest"
 
@@ -11,19 +11,19 @@ but do not like BDD style testing.
 
 Do a test and call t.Fatal if it fails
 
-	So(a, ShouldResemble, b).ElseFatal(t)
+	So(a, should.Resemble, b).ElseFatal(t)
 
 Do a test and call t.Error if it fails
 
-	So(a, ShouldResemble, b).ElseError(t)
+	So(a, should.Resemble, b).ElseError(t)
 
 Do a test and call your own function if it fails
 
-	So(a, ShouldResemble, b).Else(func(msg string) {
+	So(a, should.Resemble, b).Else(func(msg string) {
 		t.Fatalf("\nfailed at index %d\n%s", i, msg)
 	})
 
 Make your own test object so you don't need to pass `t` every time.
 
 	g := NewTest(t)
-	g.So(a, ShouldResemble, b).ElseError()
+	g.So(a, should.Resemble, b).ElseError()

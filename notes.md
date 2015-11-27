@@ -26,7 +26,7 @@ So(a, ShouldResemble, b).Else(func(m string) {
 
 ## Creating an object and having it call t.Error/t.Fatal itself.
 
-### Example 1 
+### Example 1
 
 ```
 g = New(t)

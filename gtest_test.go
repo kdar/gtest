@@ -1,6 +1,10 @@
 package gtest
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/smartystreets/assertions/should"
+)
 
 type mockT struct {
 	*testing.T
@@ -31,7 +35,7 @@ func (t *mockT) Fatalf(format string, args ...interface{}) {
 
 func TestElse(t *testing.T) {
 	called1 := false
-	So("a", ShouldEqual, "b").Else(func(m string) {
+	So("a", should.Equal, "b").Else(func(m string) {
 		called1 = true
 	})
 
@@ -40,7 +44,7 @@ func TestElse(t *testing.T) {
 	}
 
 	called2 := false
-	So("a", ShouldEqual, "a").Else(func(m string) {
+	So("a", should.Equal, "a").Else(func(m string) {
 		called2 = true
 	})
 
@@ -55,7 +59,7 @@ func TestElseFatal(t *testing.T) {
 	mt.OnFatal = func() {
 		called1 = true
 	}
-	So("a", ShouldEqual, "b").ElseFatal(mt)
+	So("a", should.Equal, "b").ElseFatal(mt)
 	if !called1 {
 		t.Error("expected Fatal to be called")
 	}
@@ -64,7 +68,7 @@ func TestElseFatal(t *testing.T) {
 	mt.OnFatal = func() {
 		called2 = true
 	}
-	So("a", ShouldEqual, "a").ElseFatal(mt)
+	So("a", should.Equal, "a").ElseFatal(mt)
 	if called2 {
 		t.Error("expected Fatal not to be called")
 	}
@@ -77,7 +81,7 @@ func TestElseFatal(t *testing.T) {
 			}
 		}()
 
-		So("a", ShouldEqual, "b").ElseFatal()
+		So("a", should.Equal, "b").ElseFatal()
 	}()
 	if !didPanic {
 		t.Error("expected ElseFatal to panic when not passed testing.TB")
@@ -90,7 +94,7 @@ func TestElseError(t *testing.T) {
 	mt.OnError = func() {
 		called1 = true
 	}
-	So("a", ShouldEqual, "b").ElseError(mt)
+	So("a", should.Equal, "b").ElseError(mt)
 	if !called1 {
 		t.Error("expected Fatal to be called")
 	}
@@ -99,7 +103,7 @@ func TestElseError(t *testing.T) {
 	mt.OnError = func() {
 		called2 = true
 	}
-	So("a", ShouldEqual, "a").ElseError(mt)
+	So("a", should.Equal, "a").ElseError(mt)
 	if called2 {
 		t.Error("expected Fatal not to be called")
 	}
@@ -112,7 +116,7 @@ func TestElseError(t *testing.T) {
 			}
 		}()
 
-		So("a", ShouldEqual, "b").ElseError()
+		So("a", should.Equal, "b").ElseError()
 	}()
 	if !didPanic {
 		t.Error("expected ElseError to panic when not passed testing.TB")
