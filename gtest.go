@@ -47,6 +47,36 @@ func (t *test) So(actual interface{}, assert func(actual interface{}, expected .
 	}
 }
 
+func (t *test) Assert(actual interface{}, assert func(actual interface{}, expected ...interface{}) string, expected ...interface{}) bool {
+	ok, message := assertions.So(actual, assert, expected...)
+
+	if !ok {
+		if t.t == nil {
+			panic("gtest: called Require but no testing.TB")
+		}
+
+		_, file, line, _ := runtime.Caller(1)
+		t.t.Errorf("\n%s:%d\n%s", file, line, message)
+	}
+
+	return ok
+}
+
+func (t *test) Require(actual interface{}, assert func(actual interface{}, expected ...interface{}) string, expected ...interface{}) bool {
+	ok, message := assertions.So(actual, assert, expected...)
+
+	if !ok {
+		if t.t == nil {
+			panic("gtest: called Require but no testing.TB")
+		}
+
+		_, file, line, _ := runtime.Caller(1)
+		t.t.Fatalf("\n%s:%d\n%s", file, line, message)
+	}
+
+	return ok
+}
+
 // ElseFatal is used to call t.Fatal when the test fails.
 func (t SoTest) ElseFatal() {
 	if !t.ok {

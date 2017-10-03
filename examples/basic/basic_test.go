@@ -29,6 +29,8 @@ func TestFailAdd(t *testing.T) {
 	answer := FailAdd(5, 6)
 	// Error using t.Error if they do not equal.
 	g.So(answer, assertions.ShouldEqual, 11).ElseError()
+	// Same as above but more succinct
+	// g.Assert(answer, assertions.ShouldEqual, 11)
 
 	answer2 := FailAdd(-5, -6)
 	// Call our function if they do not equal.
@@ -37,4 +39,6 @@ func TestFailAdd(t *testing.T) {
 	answer3 := FailAdd(0, 0)
 	// Call t.Fatal if they do not equal.
 	g.So(answer3, assertions.ShouldEqual, 0).ElseFatal()
+	// Same as above but more succinct
+	// g.Require(answer3, assertions.ShouldEqual, 0)
 }

@@ -13,11 +13,15 @@ Do a test and call t.Fatal if it fails
 
 	g := NewTest(t)
 	g.So(a, should.Resemble, b).ElseFatal()
+	// or more succinctly:
+	g.Require(a, should.Resemble, b)
 
 Do a test and call t.Error if it fails
 
 	g := NewTest(t)
 	g.So(a, should.Resemble, b).ElseError()
+	// or more succinctly:
+	g.Assert(a, should.Resemble, b)
 
 Do a test and call t.Fatalf
 
