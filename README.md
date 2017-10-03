@@ -11,19 +11,15 @@ but do not like BDD style testing.
 
 Do a test and call t.Fatal if it fails
 
-	So(a, should.Resemble, b).ElseFatal(t)
+	g := NewTest(t)
+	g.So(a, should.Resemble, b).ElseFatal()
 
 Do a test and call t.Error if it fails
 
-	So(a, should.Resemble, b).ElseError(t)
-
-Do a test and call your own function if it fails
-
-	So(a, should.Resemble, b).Else(func(msg string) {
-		t.Fatalf("\nfailed at index %d\n%s", i, msg)
-	})
-
-Make your own test object so you don't need to pass `t` every time.
-
 	g := NewTest(t)
 	g.So(a, should.Resemble, b).ElseError()
+
+Do a test and call t.Fatalf
+
+	g := NewTest(t)
+	g.So(a, should.Resemble, b).ElseFatalf("failed at index %d\n%s\n", i, gotest.MSG)

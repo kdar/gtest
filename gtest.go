@@ -11,9 +11,13 @@ import (
 	"github.com/smartystreets/assertions"
 )
 
-var (
-	defaultTest = &test{}
-)
+type kind int
+
+const MSG kind = 0
+
+// var (
+// 	defaultTest = &test{}
+// )
 
 type SoTest struct {
 	// actual   interface{}
@@ -42,9 +46,9 @@ func New(t testing.TB) *test {
 // required is to import this package and call `So` with one of the assertions
 // exported by this package as the second parameter.
 // This function uses the default test object created by the package.
-func So(actual interface{}, assert func(actual interface{}, expected ...interface{}) string, expected ...interface{}) SoTest {
-	return defaultTest.So(actual, assert, expected...)
-}
+// func So(actual interface{}, assert func(actual interface{}, expected ...interface{}) string, expected ...interface{}) SoTest {
+// 	return defaultTest.So(actual, assert, expected...)
+// }
 
 // So is a convenience function for running assertions on arbitrary arguments
 // in any context, be it for testing or even application logging. It allows you
@@ -63,37 +67,40 @@ func (t *test) So(actual interface{}, assert func(actual interface{}, expected .
 
 // Else allows you to provide a function to be called when the test fails.
 // The callback is called with one parameter with the error message.
-func (t SoTest) Else(args ...interface{}) {
-	if !t.ok {
-		var f func(string)
-		for _, v := range args {
-			switch t := v.(type) {
-			case func(string):
-				f = t
-			}
-		}
+// func (t SoTest) Else(args ...interface{}) {
+// 	if !t.ok {
+// 		var f func(string)
+// 		for _, v := range args {
+// 			switch t := v.(type) {
+// 			case func(string):
+// 				f = t
+// 			}
+// 		}
 
-		f(fmt.Sprintf("\n%s\n", t.message))
-	}
-}
+// 		_, file, line, _ := runtime.Caller(1)
+// 		f(fmt.Sprintf("\n%s:%d\n%s", file, line, t.message))
+// 	}
+// }
 
 // ElseFatal is used to call t.Fatal when the test fails.
-func (t SoTest) ElseFatal(args ...interface{}) {
+func (t SoTest) ElseFatal() {
 	if !t.ok {
 		tt := t.test.t
-		for _, v := range args {
-			switch t := v.(type) {
-			case testing.TB:
-				tt = t
-			}
-		}
+		// for _, v := range args {
+		// 	switch t := v.(type) {
+		// 	case testing.TB:
+		// 		tt = t
+		// 	}
+		// }
 
 		if tt == nil {
 			panic("gtest: called ElseFatal but no testing.TB")
 		}
 
-		ci := CallerInfo()
-		tt.Fatalf("\r%s\r\t%s\n%s\n\n", getWhitespaceString(), ci[len(ci)-1], t.message)
+		//ci := CallerInfo()
+		//tt.Fatalf("\r%s\r\t%s\n%s\n\n", getWhitespaceString(), ci[len(ci)-1], t.message)
+		_, file, line, _ := runtime.Caller(1)
+		tt.Fatalf("\n%s:%d\n%s", file, line, t.message)
 	}
 }
 
@@ -101,22 +108,68 @@ func (t SoTest) ElseFatal(args ...interface{}) {
 // This function will overwrite the default go file/line number
 // using "\r". This is hacky and will show up in logs weird. Use
 // `Else()` instead of you want to avoid this.
-func (t SoTest) ElseError(args ...interface{}) {
+func (t SoTest) ElseError() {
 	if !t.ok {
 		tt := t.test.t
-		for _, v := range args {
-			switch t := v.(type) {
-			case testing.TB:
-				tt = t
-			}
-		}
+		// for _, v := range args {
+		// 	switch t := v.(type) {
+		// 	case testing.TB:
+		// 		tt = t
+		// 	}
+		// }
 
 		if tt == nil {
 			panic("gtest: called ElseError but no testing.TB")
 		}
 
-		ci := CallerInfo()
-		tt.Errorf("\r%s\r\t%s\n%s\n\n", getWhitespaceString(), ci[len(ci)-1], t.message)
+		_, file, line, _ := runtime.Caller(1)
+		tt.Errorf("\n%s:%d\n%s", file, line, t.message)
+
+		//ci := CallerInfo()
+		//tt.Errorf("\r%s\r\t%s\n%s\n\n", getWhitespaceString(), ci[len(ci)-1], t.message)
+	}
+}
+
+// ElseErrorf is just like ElseError except it lets you format your
+// message. Pass gtest.MSG to the formatter to dictate where it will
+// be placed. E.g.
+// g.So(answer, assertions.ShouldEqual, -11).ElseErrorf("%s", gtest.MSG)
+func (t SoTest) ElseErrorf(format string, args ...interface{}) {
+	if !t.ok {
+		tt := t.test.t
+		if tt == nil {
+			panic("gtest: called ElseErrorf but no testing.TB")
+		}
+
+		for i := range args {
+			switch args[i].(type) {
+			case kind:
+				args[i] = t.message
+			}
+		}
+
+		_, file, line, _ := runtime.Caller(1)
+		tt.Errorf("\n%s:%d\n%s", file, line, fmt.Sprintf(format, args...))
+	}
+}
+
+// ElseFataf is just like ElseErrorf except it calls t.Fatalf.
+func (t SoTest) ElseFatalf(format string, args ...interface{}) {
+	if !t.ok {
+		tt := t.test.t
+		if tt == nil {
+			panic("gtest: called ElseFatalf but no testing.TB")
+		}
+
+		for i := range args {
+			switch args[i].(type) {
+			case kind:
+				args[i] = t.message
+			}
+		}
+
+		_, file, line, _ := runtime.Caller(1)
+		tt.Fatalf("\n%s:%d\n%s", file, line, fmt.Sprintf(format, args...))
 	}
 }
 
